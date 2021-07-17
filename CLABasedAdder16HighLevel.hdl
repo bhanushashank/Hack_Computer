@@ -1,0 +1,206 @@
+/* 
+    Carry-Look-Ahead Based 16 bit Adder, using higher level propagate and generate terms.
+
+    Inputs: Two buses x[16], y[16]; AorS: operation (0 for addition, 1 for subtraction); 
+            signed: indicates signed of input numbers (0 for unsigned, 1 for signed)
+
+    Outputs: s[16] (sum/difference of x and y); OF = overflow
+*/
+CHIP CLABasedAdder16HighLevel{
+
+       IN x[16], y[16], AorS, signed;
+       OUT  s[16], OF;
+
+      PARTS:
+
+      // Modifying y so that both addition and subtraction can be performed using the same circuit.
+      // If subtraction is to be 1, y is converted to ~y (complement of y), later changed to 2's complement form
+      Xor(a = y[0], b = AorS, out = yM0);
+      Xor(a = y[1], b = AorS, out = yM1);
+      Xor(a = y[2], b = AorS, out = yM2);
+      Xor(a = y[3], b = AorS, out = yM3);
+      Xor(a = y[4], b = AorS, out = yM4);
+      Xor(a = y[5], b = AorS, out = yM5);
+      Xor(a = y[6], b = AorS, out = yM6);
+      Xor(a = y[7], b = AorS, out = yM7);
+      Xor(a = y[8], b = AorS, out = yM8);
+      Xor(a = y[9], b = AorS, out = yM9);
+      Xor(a = y[10], b = AorS, out = yM10);
+      Xor(a = y[11], b = AorS, out = yM11);
+      Xor(a = y[12], b = AorS, out = yM12);
+      Xor(a = y[13], b = AorS, out = yM13);
+      Xor(a = y[14], b = AorS, out = yM14);
+      Xor(a = y[15], b = AorS, out = yM15);
+
+      // Constructing propagate terms
+      Xor(a = x[0], b = yM0, out = P0);
+      Xor(a = x[1], b = yM1, out = P1);
+      Xor(a = x[2], b = yM2, out = P2);
+      Xor(a = x[3], b = yM3, out = P3);
+      Xor(a = x[4], b = yM4, out = P4);
+      Xor(a = x[5], b = yM5, out = P5);
+      Xor(a = x[6], b = yM6, out = P6);
+      Xor(a = x[7], b = yM7, out = P7);
+      Xor(a = x[8], b = yM8, out = P8);
+      Xor(a = x[9], b = yM9, out = P9);
+      Xor(a = x[10], b = yM10, out = P10);
+      Xor(a = x[11], b = yM11, out = P11);
+      Xor(a = x[12], b = yM12, out = P12);
+      Xor(a = x[13], b = yM13, out = P13);
+      Xor(a = x[14], b = yM14, out = P14);
+      Xor(a = x[15], b = yM15, out = P15);
+
+      // Constructing generate terms
+      And(a = x[0], b = yM0, out = G0);
+      And(a = x[1], b = yM1, out = G1);
+      And(a = x[2], b = yM2, out = G2);
+      And(a = x[3], b = yM3, out = G3);
+      And(a = x[4], b = yM4, out = G4);
+      And(a = x[5], b = yM5, out = G5);
+      And(a = x[6], b = yM6, out = G6);
+      And(a = x[7], b = yM7, out = G7);
+      And(a = x[8], b = yM8, out = G8);
+      And(a = x[9], b = yM9, out = G9);
+      And(a = x[10], b = yM10, out = G10);
+      And(a = x[11], b = yM11, out = G11);
+      And(a = x[12], b = yM12, out = G12);
+      And(a = x[13], b = yM13, out = G13);
+      And(a = x[14], b = yM14, out = G14);
+      And(a = x[15], b = yM15, out = G15);
+
+     // Constructing higher level propagate terms
+
+     // PK0 = P3 * P2 * P1 * P0
+     And(a = P0, b = P1, out =  q1);
+     And(a = P2, b = P3, out =  q2);
+     And(a =  q1, b =  q2, out = PK0);
+
+     // PK1 = P7 * P6 * P5 * P4
+     And(a = P4, b = P5, out =  q3);
+     And(a = P6, b = P7, out =  q4);
+     And(a =  q3, b =  q4, out = PK1);
+
+     // PK2 = P11 * P10 * P9 * P8
+     And(a = P8, b = P9, out =  q5);
+     And(a = P10, b = P11, out =  q6);
+     And(a =  q5, b =  q6, out = PK2);
+     
+     // PK3 = P15 * P14 * P13 * P12
+     And(a = P12, b = P13, out =  q7);
+     And(a = P14, b = P15, out =  q8);
+     And(a =  q7, b =  q8, out = PK3);
+
+    // Constructing higher level generate terms
+
+    // GK0 = (P3 * P2 * P1 * G0) + (P2 * P1 * G1) + (P1 * G2) + P3
+     And(a = P1, b = G0, out =  q9);
+     And(a =  q2, b =  q9, out =  q10);
+     And(a =  q2, b = G1, out =  q11);
+     And(a = P3, b = G2, out =  q12);
+     Or(a =  q10, b =  q11, out =  q13);
+     Or(a =  q12, b = G3, out =  q14);
+     Or(a =  q13, b =  q14, out = GK0);
+
+     // GK1 = (P7 * P6 * P5 * G4) + (P6 * P5 * G5) + (P5 * G6) + G7
+     And(a = P5, b = G4, out =  z9);
+     And(a =  z9, b =  q4, out =  z10);
+     And(a =  q4, b = G5, out =  z11);
+     And(a = P7, b = G6, out =  z12);
+     Or(a =  z11, b =  z10, out =  z13);
+     Or(a =  z12, b = G7, out =  z14);
+     Or(a =  z13, b =  z14, out = GK1);
+
+     // GK2 = (P11 * P10 * P9 * G8) + (P10 * P9 * G9) + (P9 * G10) + G11
+     And(a = P9, b = G8, out =  r9);
+     And(a =  q6, b =  r9, out =  r10);
+     And(a =  q6, b = G9, out =  r11);
+     And(a = P11, b = G10, out =  r12);
+     Or(a =  r10, b =  r11, out =  r13);
+     Or(a =  r12, b = G11, out =  r14);
+     Or(a =  r13, b =  r14, out = GK2);
+
+     // GK3 = (P15 * P14 * P13 * G12) + (P14 * P13 * G13) + (P13 * G14) + G15
+     And(a = P13, b = G12, out =  w9);
+     And(a =  q8, b =  w9, out =  w10);
+     And(a =  q8, b = G1, out =  w11);
+     And(a = P15, b = G14, out =  w12);
+     Or(a =  w10, b =  w11, out =  w13);
+     Or(a =  w12, b = G15, out =  w14);
+     Or(a =  w13, b =  w14, out = GK3);
+
+    // Generating carry bits corresponding to higher level P & G terms
+     And(a = PK0, b = AorS, out =  q15);
+     Or(a =  q15, b = GK0, out = C4);
+
+     And(a = PK1, b = C4, out =  q16);
+     Or(a =  q16, b = GK1, out = C8);
+
+     And(a = PK2, b = C8, out =  q17);
+     Or(a =  q17, b = GK2, out = C12);
+
+     And(a = PK3, b = C12, out =  q18);
+     Or(a =  q18, b = GK3, out = C16);
+
+     // Generating remaining carry bits
+     // AorS[i+1] = P[i]*AorS[i] + G[i]
+
+     And(a = P0, b = AorS, out =  q19);
+     Or(a =  q19, b = G0, out = C1);
+
+     And(a = P1, b = C1, out =  q20);
+     Or(a =  q20, b = G1, out = C2);
+
+     And(a = P2, b = C2, out =  q21);
+     Or(a =  q21, b = G2, out = C3);
+
+     And(a = P4, b = C4, out =  q22);
+     Or(a =  q22, b = G4, out = C5);
+
+     And(a = P5, b = C5, out =  q23);
+     Or(a =  q23, b = G5, out = C6);
+
+     And(a = P6, b = C6, out =  q25);
+     Or(a =  q25, b = G6, out = C7);
+
+     And(a = P8, b = C8, out =  q26);
+     Or(a =  q26, b = G8, out = C9);
+
+     And(a = P9, b = C9, out =  q27);
+     Or(a =  q27, b = G9, out = C10);
+
+     And(a = P10, b = C10, out =  q28);
+     Or(a =  q28, b = G10, out = C11);
+
+     And(a = P12, b = C12, out =  q29);
+     Or(a =  q29, b = G12, out = C13);
+
+     And(a = P13, b = C13, out =  q30);
+     Or(a =  q30, b = G13, out = C14);
+
+     And(a = P14, b = C14, out =  q31);
+     Or(a =  q31, b = G14, out = C15);
+
+    // Generating all the sum bits
+    Xor(a = AorS, b = P0, out = s[0]);
+    Xor(a = C1, b = P1, out = s[1]);
+    Xor(a = C2, b = P2, out = s[2]);
+    Xor(a = C3, b = P3, out = s[3]);
+    Xor(a = C4, b = P4, out = s[4]);
+    Xor(a = C5, b = P5, out = s[5]);
+    Xor(a = C6, b = P6, out = s[6]);
+    Xor(a = C7, b = P7, out = s[7]);
+    Xor(a = C8, b = P8, out = s[8]);
+    Xor(a = C9, b = P9, out = s[9]);
+    Xor(a = C10, b = P10, out = s[10]);
+    Xor(a = C11, b = P11, out = s[11]);
+    Xor(a = C12, b = P12, out = s[12]);
+    Xor(a = C13, b = P13, out = s[13]);
+    Xor(a = C14, b = P14, out = s[14]);
+    Xor(a = C15, b = P15, out = s[15]);
+
+    // Overflow bit = (c15 AND signed) XOR c16
+    And(a = C15, b = signed, out = temp);
+    Xor(a = temp, b = C16, out = OF);
+
+    
+}

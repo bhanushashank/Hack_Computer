@@ -1,0 +1,98 @@
+/*
+    Hack CPU is designed to implement/execute hack machine language instructions.
+    It performs operations including data retrieval, 
+    The Hack CPU consists of the following parts:
+    - A Register (ARegister)   : To store both data and address
+    - D Register (DRegister)   : To store data values
+    - Program Counter (PC)     : Contains the address of next instruction to be executed. 
+                                 16-bit counter with load and reset controls
+    - Hack ALU                 : Performs elementary operations on input operands x and y, based on the op-code
+    - Instruction Decode Logic : Sets control signals to various components of the CPU, depending on the instruction
+*/
+
+CHIP HackCPU{
+
+    IN inM[16],         // inM holds the value of the location pointed to by A
+       instruction[16], // Instruction from the ROM (instruction memory)
+       reset;           // reset <-- 1 sets the PC to 0
+
+    OUT outM[16],       // Value written to the location 'addressM', when writeM signal is 1
+        writeM,         // Control signal for the write operation
+        addressM[6],    // Address in data Memory (M)
+        pc[15];         // Address of the next instruction (in the program counter)
+
+    PARTS:
+
+    /*
+        Format of a C-instruction:
+           1  1  1  a  c1 c2 c3 c4 c5 c6 d1 d2 d3 j1 j2 j3
+           15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
+
+        c1 to c6: control signals to the ALU, correspond to zx, nx, zy, ny, f, n0
+        d1 to d3: destination operations, decide where the output value must be stored
+        j1 to j3: Together indicate different jump flags (JGT, JEQ, JLT, ...)
+    */
+
+    // This Multiplexer (Mux1) selects the input to the A register, based on the type of instruction
+    Not(in = instruction[15], out = i15bar);
+    Mux2Way16(x = ALUout, y = instruction, s = i15bar, z = Ainput);
+
+    // writeA = I15 * I5 + cI5 
+    And(a = instruction[15], b = instruction[5], out = i15i5);
+    Or(a = i15bar, b = i15i5, out = writeA);
+
+    // writeD = I15 * I4
+    And(a = instruction[15], b = instruction[4], out = writeD);
+
+    // writeM = I15 * I3
+    And(a = instruction[3], b = instruction[15], out = writeM);
+
+    // A-Register, stores addresses of variables (from the data memory RAM)
+    ARegister(in = Ainput, load = writeA, out[0..5] = addressM, out = mux2Input, out = pcInput);
+
+    // D-Register, stores data values
+    DRegister(in = ALUout, load = writeD, out = ALUinputX);
+
+    // This Multiplexer (Mux2) selects the data from A-register or inM 
+    And(a = instruction[15], b = instruction[12], out = AMselect);
+    Mux2Way16(x = mux2Input, y = inM, s = AMselect, z = ALUinputY);
+
+    // The ALU takes inputs from the D register and Mux2. control signals are c1 to c6
+    // Outputs are used for the jump instruction
+    HackALU(x = ALUinputX, y = ALUinputY, zx = instruction[11], nx = instruction[10], zy = instruction[9],
+            ny = instruction[8], f = instruction[7], n0 = instruction[6], out = ALUout, out = outM, zr = zr, ng = ng);
+    
+    /*
+        J - indicates whether or not a jump has to performed
+        000 - No jump, out++
+        111 - Jump to A, out = A
+        Other inputs: Conditional Jump
+
+        J = (positive*nonzero*jgt) + (zero*jeq) + (ng*jlt)
+
+        J = 0 when jgt = jeq = jlt = 0
+        J = 1 when jgt = jeq = jlt = 1
+        All the other conditional jump instructions JGT, JEQ, JGE, JLT, JNE, JLE are also handled by this expression
+    */
+    Not(in = ng, out = positive);                  
+    Not(in = zr, out = nonzero);
+    And(a = positive, b = nonzero, out = t1);
+
+    And(a = instruction[15], b = instruction[0], out = jgt);    // if(jgt) then out > 0
+    And(a = instruction[15], b = instruction[1], out = jeq);    // if(jeq) then out = 0
+    And(a = instruction[15], b = instruction[2], out = jlt);    // if(jlt) then out < 0
+
+    And(a = t1, b = jgt, out = j1);
+    And(a = jeq, b = zr, out = j2);
+    And(a = jlt, b = ng, out = j3);
+
+    Or(a = j1, b = j2, out = t2);
+    Or(a = t2, b = j3, out = j);
+
+    // Program Counter (custom-built)
+    PC(in = pcInput, load = j, inc = true, reset = reset, out[0..14] = pc);
+
+}
+
+
+

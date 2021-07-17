@@ -1,0 +1,32 @@
+/*  
+    Performs OR operation between corresponding bits of two buses x and y, 
+    and returns the resultant array c.
+
+    c[i] = (x[i] + y[i]) for every i in [0, 15]
+
+    Used mainly for modularizing the code in other chips.
+*/
+CHIP  OR16{
+
+    IN x[16], y[16];
+    OUT c[16];
+
+    PARTS:
+ 
+    Or(a = x[0], b = y[0], out = c[0]);
+    Or(a = x[1], b = y[1], out = c[1]);
+    Or(a = x[2], b = y[2], out = c[2]);
+    Or(a = x[3], b = y[3], out = c[3]);
+    Or(a = x[4], b = y[4], out = c[4]);
+    Or(a = x[5], b = y[5], out = c[5]);
+    Or(a = x[6], b = y[6], out = c[6]);
+    Or(a = x[7], b = y[7], out = c[7]);
+    Or(a = x[8], b = y[8], out = c[8]);
+    Or(a = x[9], b = y[9], out = c[9]);
+    Or(a = x[10], b = y[10], out = c[10]);
+    Or(a = x[11], b = y[11], out = c[11]);
+    Or(a = x[12], b = y[12], out = c[12]);
+    Or(a = x[13], b = y[13], out = c[13]);
+    Or(a = x[14], b = y[14], out = c[14]);
+    Or(a = x[15], b = y[15], out = c[15]);
+}

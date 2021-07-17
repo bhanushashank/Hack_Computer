@@ -1,0 +1,27 @@
+/*
+  Hack Computer consists of three components:
+    - ROM (Stores Instructions)
+    - CPU (Performs operations based on the instruction)
+    - RAM (Data Memory)
+
+    When reset is 0, the program stored in the computer's ROM executes.
+    When reset is 1, the execution of the program restarts. 
+*/
+CHIP HackComputer{
+
+    // Control to reset the PC present in Hack CPU
+    IN reset;
+
+    PARTS:
+
+    // Takes instruction, address from ROM, data from RAM and reset as inputs.
+    // Performs the required operation and writes (if needed) data into RAM
+    HackCPU(inM = MemoryOut, instruction = instruction, reset = reset, pc = ROMaddress, addressM = MemoryAddress, outM = MemoryIn, writeM = load);
+
+    // When the load bit is 1, input to 'in' is stored at the memory location having the given address. 
+    // When the load bit is 0, data stored at the given address is given as the output
+    RAM64(in = MemoryIn, load = load, address = MemoryAddress, out = MemoryOut);
+
+    // Receives the address of the instruction, outputs the instruction
+    ROM32K(address = ROMaddress, out = instruction);
+}

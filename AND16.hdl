@@ -1,0 +1,30 @@
+/*
+    AND16 performs 'and' operation of every element of the input array 'x' with 'y'.
+    Returns an array c
+*/
+CHIP AND16{
+
+    IN x[16], y;
+    OUT c[16];
+
+    PARTS:
+    // Each bit of the output array is obtained from an 'and' operation
+    // c[i] = (x[i] AND y) for all i in [0, 15]
+
+    And(a = x[0], b = y, out = c[0]);
+    And(a = x[1], b = y, out = c[1]);
+    And(a = x[2], b = y, out = c[2]);
+    And(a = x[3], b = y, out = c[3]);
+    And(a = x[4], b = y, out = c[4]);
+    And(a = x[5], b = y, out = c[5]);
+    And(a = x[6], b = y, out = c[6]);
+    And(a = x[7], b = y, out = c[7]);
+    And(a = x[8], b = y, out = c[8]);
+    And(a = x[9], b = y, out = c[9]);
+    And(a = x[10], b = y, out = c[10]);
+    And(a = x[11], b = y, out = c[11]);
+    And(a = x[12], b = y, out = c[12]);
+    And(a = x[13], b = y, out = c[13]);
+    And(a = x[14], b = y, out = c[14]);
+    And(a = x[15], b = y, out = c[15]);
+}

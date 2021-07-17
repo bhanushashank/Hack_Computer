@@ -1,0 +1,31 @@
+/*
+    CHIP XOR16
+    Performs bitwise XOR operation of the input bus with the input bit.
+
+    Inputs: A bus a[16] and a 'bit' to perform XOR operation with
+    Output: A bus b[16], where b[i] = (a[i] XOR bit), for every i in [0, 15]
+*/
+CHIP XOR16{
+
+    IN a[16], bit;
+    OUT b[16];
+
+    PARTS:
+    // Self-explanatory.
+    Xor(a = a[0], b = bit, out = b[0]);
+    Xor(a = a[1], b = bit, out = b[1]);
+    Xor(a = a[2], b = bit, out = b[2]);
+    Xor(a = a[3], b = bit, out = b[3]);
+    Xor(a = a[4], b = bit, out = b[4]);
+    Xor(a = a[5], b = bit, out = b[5]);
+    Xor(a = a[6], b = bit, out = b[6]);
+    Xor(a = a[7], b = bit, out = b[7]);
+    Xor(a = a[8], b = bit, out = b[8]);
+    Xor(a = a[9], b = bit, out = b[9]);
+    Xor(a = a[10], b = bit, out = b[10]);
+    Xor(a = a[11], b = bit, out = b[11]);
+    Xor(a = a[12], b = bit, out = b[12]);
+    Xor(a = a[13], b = bit, out = b[13]);
+    Xor(a = a[14], b = bit, out = b[14]);
+    Xor(a = a[15], b = bit, out = b[15]);
+}

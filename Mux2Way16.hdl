@@ -1,0 +1,19 @@
+/*
+    16-bit 2 to 1 line multiplexer.
+    Inputs: Two buses x[16] and y[16], select line s
+    Output: z = x if s is 0, y if s is 1.
+
+*/
+CHIP Mux2Way16{
+
+    IN x[16], y[16], s;
+    OUT z[16];
+
+    PARTS:
+
+    // z = cs.x + s.y, where cs = ~s (complement of s)
+    Not(in = s, out = cs);
+    AND16(x = x, y = cs, c = z1);
+    AND16(x = y, y = s, c = z2);
+    OR16(x = z1, y = z2, c = z);
+}

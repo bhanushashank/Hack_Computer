@@ -1,0 +1,37 @@
+/*
+    Implementation of Hack ALU:
+
+    Inputs: Two buses x[16] and y[16]
+    Control Signals: zx, nx, zy, ny, f, n0 (also taken as inputs)
+    Outputs: Bus out[16], which is the result some op. on  x and y depending on the control signals
+    Status Bits: zr, ng (also taken as outputs)
+*/
+CHIP HackALU{
+    
+    IN x[16], y[16],            // 16-bit buses x and y
+       zx, nx, zy, ny, f, n0;   // Control signals, indicate which operation to be performed
+
+    OUT out[16],  // Some operation on x and y
+        zr, ng;   // Status bits
+
+    PARTS:
+    // Following 2 operations to generate p
+    Mux2Way16(x = x, y[0..15] = false, s = zx, z = p1);
+    XOR16(a = p1, bit = nx, b = p);
+
+    // Following 2 operations to generate q
+    Mux2Way16(x = y, y[0..15] = false, s = zy, z = q1);
+    XOR16(a = q1, bit = ny, b = q);
+
+    // Computing p+q and p&q, using other custom-built chips
+    CLABasedAdder16HighLevel(x = p, y = q, AorS = false, signed = true, s = PplusQ, OF = ignore);
+    AND16A(x = p, y = q, c = PandQ);
+
+    Mux2Way16(x = PandQ, y = PplusQ, s = f, z = r);         // Computing r
+    XOR16(a = r, bit = n0, b[0..14] = ignore2, b[15] = ng); // Generating the status bit 'ng'
+    
+    XOR16(a = r, bit = n0, b = tempOut1);
+    SixteenBitComparator(x = tempOut1, y[0..15] = false, z = zr);   // Generating the status bit 'nr'
+    
+    XOR16(a = r, bit = n0, b = out);    // Final result 'out'
+}

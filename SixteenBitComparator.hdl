@@ -1,0 +1,56 @@
+/*
+    16 bit comparator. Compares the corresponding bits of x and y.
+
+    Inputs: Two buses x[16] and y[16]
+    Output: 1 if x == y; 0 otherwise
+*/
+CHIP SixteenBitComparator{
+	IN x[16], y[16];
+	OUT z;
+
+    PARTS:
+
+    // Taking XOR of corresponding bits. If two bits are equal, their XOR is 0.
+    Xor(a = x[0], b = y[0], out = t0);
+    Xor(a = x[1], b = y[1], out = t1);
+    Xor(a = x[2], b = y[2], out = t2);
+    Xor(a = x[3], b = y[3], out = t3);
+    Xor(a = x[4], b = y[4], out = t4);
+    Xor(a = x[5], b = y[5], out = t5);
+    Xor(a = x[6], b = y[6], out = t6);
+    Xor(a = x[7], b = y[7], out = t7);
+    Xor(a = x[8], b = y[8], out = t8);
+    Xor(a = x[9], b = y[9], out = t9);
+    Xor(a = x[10], b = y[10], out = t10);
+    Xor(a = x[11], b = y[11], out = t11);
+    Xor(a = x[12], b = y[12], out = t12);
+    Xor(a = x[13], b = y[13], out = t13);
+    Xor(a = x[14], b = y[14], out = t14);
+    Xor(a = x[15], b = y[15], out = t15);
+
+    // Calculating sum of all the XORs. 
+    // If this sum is non-zero, then x and y are not equal. 
+    // If this sum is zero, then x is equal to y
+
+    Or(a = t0, b = t1, out = s0);
+    Or(a = t2, b = t3, out = s1);
+    Or(a = t4, b = t5, out = s2);
+    Or(a = t6, b = t7, out = s3);
+    Or(a = t8, b = t9, out = s4);
+    Or(a = t10, b = t11, out = s5);
+    Or(a = t12, b = t13, out = s6);
+    Or(a = t14, b = t15, out = s7);
+
+    Or(a = s0, b = s1, out = w0);
+    Or(a = s2, b = s3, out = w1);
+    Or(a = s4, b = s5, out = w2);
+    Or(a = s6, b = s7, out = w3);
+
+    Or(a = w0, b = w1, out = temp1);
+    Or(a = w2, b = w3, out = temp2);
+
+    Or(a = temp1, b = temp2, out = cz);
+
+    // Returning the complement of above sum, as 1 should be returned when sum = 0 and viceversa.
+    Not(in = cz, out = z);
+}

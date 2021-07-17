@@ -1,0 +1,32 @@
+/*
+    CHIP AND16A
+
+    Performs AND operation between corresponding bits of x and y.
+
+    Inputs: Two buses x[16] and y[16]
+    Output: 16-bit bus c[16]
+*/
+CHIP AND16A{
+
+    IN x[16], y[16];
+    OUT c[16];
+
+    PARTS:
+    // c[i] = (x[i] AND y[i]) for every i in [0, 15]
+    And(a = x[0], b = y[0], out = c[0]);
+    And(a = x[1], b = y[1], out = c[1]);
+    And(a = x[2], b = y[2], out = c[2]);
+    And(a = x[3], b = y[3], out = c[3]);
+    And(a = x[4], b = y[4], out = c[4]);
+    And(a = x[5], b = y[5], out = c[5]);
+    And(a = x[6], b = y[6], out = c[6]);
+    And(a = x[7], b = y[7], out = c[7]);
+    And(a = x[8], b = y[8], out = c[8]);
+    And(a = x[9], b = y[9], out = c[9]);
+    And(a = x[10], b = y[10], out = c[10]);
+    And(a = x[11], b = y[11], out = c[11]);
+    And(a = x[12], b = y[12], out = c[12]);
+    And(a = x[13], b = y[13], out = c[13]);
+    And(a = x[14], b = y[14], out = c[14]);
+    And(a = x[15], b = y[14], out = c[15]);
+}

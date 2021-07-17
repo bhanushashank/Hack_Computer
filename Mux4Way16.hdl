@@ -1,0 +1,40 @@
+/*
+    16-bit 4 to 1 line multiplexer.
+    Inputs: Four buses a[16], b[16], c[16], d[16]; select lines s1, s0
+
+    Selects one of the four input lines based on the select bits supplied.
+    
+    Output:     
+            s1| s0| out
+           ----------
+            0 | 0 | a
+            0 | 1 | b
+            1 | 0 | c
+            1 | 1 | d
+*/  
+CHIP Mux4Way16{
+
+    IN a[16], b[16], c[16], d[16], s1, s0;
+    OUT out[16];
+
+    PARTS:
+    // cs0 = complement of s0, cs1 = complement of s1
+    Not(in = s1, out = cs1);
+    Not(in = s0, out = cs0);
+    
+    And(a = cs1, b = cs0, out = temp1);     // cs1 * cs0
+    And(a = cs1, b = s0, out = temp2);      // cs1 * s0
+    And(a = s1, b = cs0, out = temp3);      // s1 * cs0
+    And(a = s1, b = s0, out = temp4);       // s1 * s0
+
+    AND16(y = temp1, x = a, c = t1);        // cs1 * cs0 * a
+    AND16(y = temp2, x = b, c = t2);        // cs1 * s0 * b
+    AND16(y = temp3, x = c, c = t3);        // s1 * cs0 * c
+    AND16(y = temp4, x = d, c = t4);        // s1 * s0 * d
+
+    OR16A(x = t1, y = t2, c = out1);
+    OR16A(x = t3, y = t4, c = out2);
+
+    // out = (cs1 * cs0 * a) + (cs1 * s0 * b) + (s1 * cs0 * c) + (s1 * s0 * d)
+    OR16A(x = out1, y = out2, c = out);
+}

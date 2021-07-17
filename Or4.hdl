@@ -1,0 +1,20 @@
+/*
+    CHIP Or4
+
+    Simple 'OR' gate that performs 'or' operation on 4 inputs.
+    In other words, OR gate with fan-in 4
+
+    Inputs: 4 bits A4, B4, C4, D4
+    Output: out4 = A4 + B4 + C4 + D4
+*/
+CHIP Or4{
+	IN A4, B4, C4, D4;
+	OUT out4;
+
+    PARTS:
+    Or(a = A4, b = B4, out = t1);
+    Or(a = C4, b = D4, out = t2);
+
+    // Returns A4 + B4 + C4 + D4
+    Or(a = t1, b = t2, out = out4);
+}
